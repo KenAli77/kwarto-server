@@ -1,9 +1,9 @@
 import express from 'express'
-import authentication from "./auth/authentication";
+import authRoute from "./auth/authRoute";
 
 const router = express.Router()
 
 export default ():express.Router => {
-    authentication(router)
+    authRoute(router)
     return router
 }

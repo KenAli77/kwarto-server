@@ -1,15 +1,17 @@
-import {authentication, random} from "../../helpers";
 import * as express from 'express';
 import {UserService} from "../../services/user/UserService";
-import {CreateUser} from "../../models/user/User";
 import {AuthService} from "../../services/auth/AuthService";
+import {CreateUser} from "../../models/user/User";
+import {authentication} from "../../helpers";
 
 
 export class AuthController {
-    private userService = new UserService()
-    private authService = new AuthService()
+    private userService: UserService = new UserService()
+
 
     async loginUser(req: express.Request, res: express.Response) {
+        const userService = new UserService()
+        const authService = new AuthService()
         try {
             const {email, password} = req.body
 
@@ -19,7 +21,7 @@ export class AuthController {
             }
 
             // selecting salt and psw since they're not selected by default
-            let user = await this.userService.getUserByEmail(email)
+            let user = await userService.getUserByEmail(email)
 
             // user.select('+auth.salt + auth.password')
 
@@ -28,16 +30,18 @@ export class AuthController {
                 return res.sendStatus(400)
             }
 
+            console.log("salt",user.auth.salt)
             const expectedHash = authentication(user.auth.salt, password)
 
             if (user.auth.password !== expectedHash) {
+                console.log("hash don't match")
                 return res.sendStatus(403)
             }
 
-            user = this.authService.setSessionToken(user)
+            user = authService.setSessionToken(user)
 
             console.log("setting token to", user.auth.sessionToken)
-            await this.userService.updateUserById(user._id,user)
+            await userService.updateUserById(user._id, user)
 
             res.cookie("authToken", user.auth.sessionToken, {domain: 'localhost', path: '/'})
 
@@ -51,7 +55,7 @@ export class AuthController {
 
 
     async registerUser(req: express.Request, res: express.Response) {
-
+        const userService = new UserService()
         try {
 
             const userData = req.body as CreateUser
@@ -60,7 +64,8 @@ export class AuthController {
                 return res.sendStatus(400)
             }
 
-            const existingUser = await this.userService.getUserByEmail(userData.email)
+            console.log(userData)
+            const existingUser = await userService.getUserByEmail(userData.email)
 
             if (existingUser) {
                 /**
@@ -70,7 +75,9 @@ export class AuthController {
                 return res.sendStatus(400)
             }
 
-            const user = await this.userService.createUser(userData)
+            console.log("new user")
+
+            const user = await  userService.createUser(userData)
 
             return res.status(200).json(user).end()
 

@@ -32,15 +32,12 @@ export const UserSchema = new mongoose.Schema<User>({
         password: {
             type: String,
             required: true,
-            select: false
         },
         salt: {
             type: String,
-            select: false
         },
         sessionToken: {
             type: String,
-            select: false
         }
     },
     onBoardingDone: {

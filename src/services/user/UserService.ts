@@ -5,8 +5,7 @@ export class UserService {
 
     private userModel = UserModel
 
-
-    async getAllUsers(): Promise<Array<User>> {
+    getAllUsers(): Promise<Array<User>> {
         try {
             return this.userModel.find();
 
@@ -15,7 +14,7 @@ export class UserService {
         }
     }
 
-    async getUserById(userId: string): Promise<User | null> {
+    getUserById(userId: string): Promise<User | null> {
         try {
             return this.userModel.findById(userId)
 
@@ -27,8 +26,8 @@ export class UserService {
 
     async createUser(userData: CreateUser): Promise<User> {
         try {
-            const user:User = new UserModel();
 
+            const user: User = new UserModel();
             user.firstName = userData.firstName
             user.lastName = userData.lastName
             user.email = userData.email
@@ -37,17 +36,19 @@ export class UserService {
             const salt = random()
 
             user.auth = {
-                salt:salt,
-                password:authentication(salt, userData.password)
+                salt: salt,
+                password: authentication(salt, userData.password)
             }
 
-            return new this.userModel(user).save().then((user) => user.toObject())
+            console.log(user,userData)
+            await user.save()
+            return user
         } catch (e) {
             throw new Error(`Error creating user: ${e.message}`);
         }
     }
 
-    async getUserByEmail(email: string): Promise<User | null> {
+    getUserByEmail(email: string): Promise<User | null> {
         try {
             return this.userModel.findOne({'email': email})
 
@@ -56,7 +57,7 @@ export class UserService {
         }
     }
 
-    async getUserBySessionToken(token: string): Promise<User | null> {
+    getUserBySessionToken(token: string): Promise<User | null> {
         try {
             return this.userModel.findOne({'auth.sessionToken': token})
         } catch (e) {
@@ -64,7 +65,7 @@ export class UserService {
         }
     }
 
-    async deleteUserById(id: string): Promise<void> {
+    deleteUserById(id: string): Promise<void> {
         try {
             return this.userModel.findOneAndDelete({_id: id})
 
@@ -74,7 +75,7 @@ export class UserService {
         }
     }
 
-    async updateUserById(id: string, values: Record<string, any>): Promise<void> {
+    updateUserById(id: string, values: Record<string, any>): Promise<void> {
         try {
             return this.userModel.findByIdAndUpdate(id, values)
 
@@ -82,5 +83,6 @@ export class UserService {
             throw new Error(`Error updating user by id: ${e.message}`);
         }
     }
+
 
 }
